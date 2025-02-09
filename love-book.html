@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Love Book for You</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4c2c2; /* Baby pink background */
+            font-family: Arial, sans-serif;
+        }
+
+        .book-container {
+            position: relative;
+            width: 400px; /* Larger book width */
+            height: 500px; /* Larger book height */
+            perspective: 1000px;
+        }
+
+        .book {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 1s;
+        }
+
+        .page {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #a2d5f2; /* Baby blue pages */
+            backface-visibility: hidden;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            padding: 30px; /* Increased padding for larger pages */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px; /* Slightly larger font */
+            color: #333;
+            transition: transform 0.5s, z-index 0s; /* Smooth transition for scaling */
+            cursor: pointer;
+        }
+
+        .page textarea {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: transparent;
+            resize: none;
+            font-size: 18px; /* Slightly larger font */
+            color: #333;
+        }
+
+        .cover {
+            background-color: #800080; /* Purple cover */
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px; /* Larger font for cover */
+            font-weight: bold;
+        }
+
+        .back-cover {
+            background-color: #800080; /* Purple back cover */
+            transform: rotateY(180deg);
+        }
+
+        .page1 { transform: rotateY(0deg); }
+        .page2 { transform: rotateY(90deg); }
+        .page3 { transform: rotateY(180deg); }
+        .page4 { transform: rotateY(270deg); }
+
+        .arrow {
+            position: absolute;
+            bottom: -50px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .arrow.prev {
+            left: 30%;
+        }
+
+        .arrow.next {
+            right: 30%;
+        }
+
+        .click-to-open {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            color: #333;
+            cursor: pointer;
+        }
+
+        .page-counter {
+            position: absolute;
+            bottom: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 18px;
+            color: #333;
+        }
+
+        @media (max-width: 600px) {
+            .book-container {
+                width: 300px;
+                height: 400px;
+            }
+
+            .page {
+                padding: 20px;
+                font-size: 16px;
+            }
+
+            .page textarea {
+                font-size: 14px;
+            }
+
+            .cover {
+                font-size: 24px;
+            }
+
+            .arrow {
+                bottom: -40px;
+                font-size: 20px;
+            }
+
+            .click-to-open {
+                font-size: 20px;
+            }
+
+            .page-counter {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="click-to-open">Click to Open!!</div>
+    <div class="book-container">
+        <div class="book" id="book">
+            <!-- Cover Page -->
+            <div class="page cover page1">
+                <!-- Insert your image here -->
+                <img src="https://via.placeholder.com/400x500" alt="Cover Image" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <!-- Letter Pages -->
+            <div class="page page2" onclick="openPage(this)">
+                <textarea placeholder="Write your letter here..."></textarea>
+            </div>
+            <div class="page page3" onclick="openPage(this)">
+                <textarea placeholder="Write your letter here..."></textarea>
+            </div>
+            <!-- Back Cover -->
+            <div class="page back-cover page4">Back Cover</div>
+        </div>
+        <div class="arrow prev" onclick="prevPage()">⬅️</div>
+        <div class="arrow next" onclick="nextPage()">➡️</div>
+        <div class="page-counter" id="pageCounter">Page 1 of 4</div>
+    </div>
+
+    <!-- Background Music -->
+    <audio id="background-music" loop>
+        <source src="your-music-file.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        let currentPage = 0;
+        let isEnlarged = false;
+        const book = document.getElementById('book');
+        const pageCounter = document.getElementById('pageCounter');
+        const music = document.getElementById('background-music');
+
+        // Touch support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        book.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        });
+
+        book.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].clientX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const swipeThreshold = 50; // Minimum swipe distance to trigger a flip
+            const swipeDistance = touchEndX - touchStartX;
+
+            if (swipeDistance > swipeThreshold) {
+                prevPage(); // Swipe right to go to the previous page
+            } else if (swipeDistance < -swipeThreshold) {
+                nextPage(); // Swipe left to go to the next page
+            }
+        }
+
+        function updatePageCounter() {
+            pageCounter.textContent = `Page ${currentPage + 1} of 4`;
+        }
+
+        function nextPage() {
+            currentPage = (currentPage + 1) % 4;
+            book.style.transform = `rotateY(${currentPage * -90}deg)`;
+            updatePageCounter();
+            if (isEnlarged) {
+                resetPageSize(); // Reset all pages to normal size when flipping
+            }
+        }
+
+        function prevPage() {
+            currentPage = (currentPage - 1 + 4) % 4;
+            book.style.transform = `rotateY(${currentPage * -90}deg)`;
+            updatePageCounter();
+            if (isEnlarged) {
+                resetPageSize(); // Reset all pages to normal size when flipping
+            }
+        }
+
+        function openPage(page) {
+            const pages = document.querySelectorAll('.page');
+            if (page.classList.contains('enlarged')) {
+                // If the page is already enlarged, return it to normal
+                page.style.transform = 'scale(1)';
+                page.style.zIndex = '0';
+                page.classList.remove('enlarged');
+                isEnlarged = false;
+            } else {
+                // Enlarge the clicked page
+                resetPageSize(); // Reset all pages to normal size first
+                page.style.transform = 'scale(1.5)';
+                page.style.zIndex = '10';
+                page.classList.add('enlarged');
+                isEnlarged = true;
+            }
+        }
+
+        function resetPageSize() {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(p => {
+                p.style.transform = 'scale(1)';
+                p.style.zIndex = '0';
+                p.classList.remove('enlarged');
+            });
+            isEnlarged = false;
+        }
+
+        document.querySelector('.click-to-open').addEventListener('click', () => {
+            book.style.transform = 'rotateY(0deg)';
+            currentPage = 0;
+            updatePageCounter();
+            resetPageSize(); // Reset all pages to normal size when opening the book
+            music.play(); // Play background music
+        });
+
+        updatePageCounter();
+    </script>
+</body>
+</html>

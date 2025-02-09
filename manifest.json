@@ -1,0 +1,21 @@
+{
+    "name": "Love Book for You",
+    "short_name": "LoveBook",
+    "description": "A special interactive booklet for my love.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f4c2c2",
+    "theme_color": "#800080",
+    "icons": [
+      {
+        "src": "icon-192x192.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "icon-512x512.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  }
